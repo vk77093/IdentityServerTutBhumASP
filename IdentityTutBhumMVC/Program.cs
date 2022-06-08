@@ -1,4 +1,5 @@
 using IdentityTutBhumMVC.DataBase;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
     opt.UseSqlServer(connectionstrings);
 });
+//Adding the Identity Service
+builder.Services.AddIdentity<IdentityUser,IdentityRole>().
+    AddEntityFrameworkStores<ApplicationDbContext>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,7 +29,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
