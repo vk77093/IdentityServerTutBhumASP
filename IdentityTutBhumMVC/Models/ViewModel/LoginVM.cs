@@ -10,6 +10,7 @@ namespace IdentityTutBhumMVC.Models.ViewModel
         public string? Email { get; set; }
         [Required]
         [Display(Name = "User Password")]
+        [DataType(DataType.Password)]
         public string? Password { get; set; }
         [Display(Name = "Remember Me")]
         public bool RememberMe { get; set; }
