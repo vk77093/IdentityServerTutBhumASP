@@ -1,7 +1,7 @@
 ﻿@model RegisterVM
 <h1 class="text-info">Register User</h1>
 <div class="container">
-    <form asp-controller="Account" asp-action="Register" method="post" role="form">
+    <form asp-controller="Account" asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" role="form">
         <h4 class="text-info">Create A new Account</h4>
         <hr />
         <div asp-validation-summary="All" class="text-danger"></div>

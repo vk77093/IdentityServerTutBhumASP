@@ -20,16 +20,19 @@ namespace IdentityTutBhumMVC.Controllers
             return View();
         }
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Register(string? returnurl = null)
         {
             RegisterVM registerVM = new RegisterVM();
+            ViewData["ReturnUrl"] = returnurl;
             return View(registerVM);
         }
         [HttpPost]
         //[IgnoreAntiforgeryToken]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterVM model)
+        public async Task<IActionResult> Register(RegisterVM model, string? returnurl = null)
         {
+            ViewData["ReturnUrl"] = returnurl;
+            returnurl = returnurl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
                 var userdata=new ApplicationUser { UserName=model.Email,Email=model.Email,AddtionalName=model.AddtionlName };
@@ -37,7 +40,9 @@ namespace IdentityTutBhumMVC.Controllers
                 if (result.Succeeded)
                 {
                     await signInManager.SignInAsync(userdata, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+
+                    //return RedirectToAction("Index", "Home");
+                    return LocalRedirect(returnurl);
                 }
                 AddErrors(result);
             }
@@ -58,21 +63,27 @@ namespace IdentityTutBhumMVC.Controllers
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string returnurl = null)
         {
+            ViewData["ReturnUrl"] = returnurl;
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginVM model)
+        public async Task<IActionResult> Login(LoginVM model, string? returnurl = null)
         {
+            ViewData["ReturnUrl"] = returnurl;
+            //for giving the direct access of the page in header search
+           returnurl= returnurl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
                 var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe,
                     lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction(nameof(HomeController.Index), "Home");
+                   // return RedirectToAction(nameof(HomeController.Index), "Home");
+                   //for save from the outer login redirect
+                   return LocalRedirect(returnurl);
                 }
                 else
                 {
