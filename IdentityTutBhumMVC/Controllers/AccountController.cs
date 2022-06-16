@@ -1,6 +1,8 @@
 ﻿using IdentityTutBhumMVC.Models;
 using IdentityTutBhumMVC.Models.ViewModel;
+using IdentityTutBhumMVC.Service;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IdentityTutBhumMVC.Controllers
@@ -9,11 +11,14 @@ namespace IdentityTutBhumMVC.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
+        private readonly IEmailSender emailSender;
 
-        public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager)
+        public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager,
+            IEmailSender emailSender)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.emailSender = emailSender;
         }
         public IActionResult Index()
         {
@@ -95,6 +100,72 @@ namespace IdentityTutBhumMVC.Controllers
             return View(model);
         }
 
+        //view for the forgot password
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordVM forgotPasswordVM)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.FindByEmailAsync(forgotPasswordVM.EmailId);
+                if (user == null)
+                {
+                    return RedirectToAction("ForgotpasswordConfirmation");
+                }
+                var code = await userManager.GeneratePasswordResetTokenAsync(user);
+                var callbackurl = Url.Action("ResetPassword", "Account", new {UserId=user.Id,code=code},
+                    protocol:HttpContext.Request.Scheme);
+                string EmailHeader = "Reset Password-IdentityManager";
+                string EmailBody = "Please reset your password by click here :<a href=\"" + callbackurl + "\">Link</a>";
 
+                await emailSender.SendEmailAsync(forgotPasswordVM.EmailId, EmailHeader, EmailBody);
+                return RedirectToAction("ForgotpasswordConfirmation");
+            }
+            return View(forgotPasswordVM);
+        }
+        [HttpGet]
+        public IActionResult ForgotpasswordConfirmation()
+        {
+            return View();
+        }
+
+        //Now for the reset password
+        [HttpGet]
+        public IActionResult ResetPassword(string code=null)
+        {
+            return code==null ? View("Error"):View();
+        }
+        [HttpGet]
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordVM model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    return RedirectToAction("ResetPasswordConfirmation");
+                }
+                var result = await userManager.ResetPasswordAsync(user, model.code, model.Password);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("ResetPasswordConfirmation");
+                 
+                }
+                AddErrors(result);
+               
+            }
+            return View();
+        }
     }
 }

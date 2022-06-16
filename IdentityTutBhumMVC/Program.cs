@@ -1,5 +1,7 @@
 using IdentityTutBhumMVC.DataBase;
+using IdentityTutBhumMVC.Service;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,8 +14,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 });
 //Adding the Identity Service
 builder.Services.AddIdentity<IdentityUser,IdentityRole>().
-    AddEntityFrameworkStores<ApplicationDbContext>();
+    AddEntityFrameworkStores<ApplicationDbContext>().
+    //Adding for forgot password token generation
+    AddDefaultTokenProviders()
+    ;
 
+//Adding the EMail sender service for forgot password
+builder.Services.AddTransient<IEmailSender, MailJetEmailSender>();
 
 var app = builder.Build();
 
