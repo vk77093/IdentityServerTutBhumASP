@@ -22,6 +22,13 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>().
 //Adding the EMail sender service for forgot password
 builder.Services.AddTransient<IEmailSender, MailJetEmailSender>();
 
+//Adding the Exerenal Login Setup
+builder.Services.AddAuthentication().AddFacebook(options =>
+{
+    options.AppId = "1860438640832192";
+    options.AppSecret = "95291c1290ee0f754103647d8fd5f70f";
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
