@@ -44,9 +44,22 @@ namespace IdentityTutBhumMVC.Controllers
                 var result=await userManager.CreateAsync(userdata,model.Password);
                 if (result.Succeeded)
                 {
-                    await signInManager.SignInAsync(userdata, isPersistent: false);
+
+                   
+                    var code = await userManager.GenerateEmailConfirmationTokenAsync(userdata);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new
+                    {
+                        Userid = userdata.Id,
+                        code = code
+                    }, protocol: HttpContext.Request.Scheme);
+                    var EmailSubject = "Confirm Your Email";
+                     string EmailBody = "Please confirm your Email by click here :<a href=\"" + callbackUrl + "\">Link</a>";
+
+                    await emailSender.SendEmailAsync(model.Email, EmailSubject, EmailBody);
 
                     //return RedirectToAction("Index", "Home");
+                    //sign in User
+                    await signInManager.SignInAsync(userdata, isPersistent: false);
                     return LocalRedirect(returnurl);
                 }
                 AddErrors(result);
@@ -165,6 +178,27 @@ namespace IdentityTutBhumMVC.Controllers
                 AddErrors(result);
                
             }
+            return View();
+        }
+        //Confirm EMail function after register
+        public async Task<IActionResult> ConfirmEmail(string userId,string code)
+        {
+            if(userId== null && code == null)
+            {
+                return View("Error");
+            }
+            var user=await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return View("Error");
+            }
+            var result=await userManager.ConfirmEmailAsync(user, code);
+            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+        }
+        //My Added Error View
+        [HttpGet]
+        public IActionResult Error()
+        {
             return View();
         }
     }
