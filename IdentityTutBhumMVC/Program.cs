@@ -1,5 +1,6 @@
 using IdentityTutBhumMVC.DataBase;
 using IdentityTutBhumMVC.Service;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,12 @@ builder.Services.AddAuthentication().AddFacebook(options =>
 {
     options.AppId = "1860438640832192";
     options.AppSecret = "95291c1290ee0f754103647d8fd5f70f";
+});
+builder.Services.AddAuthentication().AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    //options.ClaimActions.MapJsonKey("urn:google:picture", "picture");
 });
 
 var app = builder.Build();
