@@ -1,9 +1,11 @@
 ﻿using IdentityTutBhumMVC.Models;
 using IdentityTutBhumMVC.Models.ViewModel;
 using IdentityTutBhumMVC.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IdentityTutBhumMVC.Controllers
 {
@@ -200,6 +202,80 @@ namespace IdentityTutBhumMVC.Controllers
         public IActionResult Error()
         {
             return View();
+        }
+        //Now All the View for the External Logins
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider,string? returnUrl)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallBack", "Account", new { ReturnUrl = returnUrl });
+            var properties=signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider); // it will ask for the JWT Token Challenge
+        }
+        [HttpGet]
+        // ExternalLoginCallBack
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallBack(string? returnUrl,string? remoteError)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+            if (remoteError != null)
+            {
+                ModelState.AddModelError(string.Empty, $"Error from External Provider{remoteError }");
+                return View(nameof(Login));
+            }
+            var info=await signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+            //sign in The User with the extrenal Login provider, If they Have Account already
+            var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+            if (result.Succeeded)
+            {
+                //Update the Any Authentication Token
+                await signInManager.UpdateExternalAuthenticationTokensAsync(info);
+                return LocalRedirect(returnUrl);
+            }
+            else
+            {
+                //If User Does't Have Account then we will ask user to Create Account
+                ViewData["ReturnUrl"] = returnUrl;
+                ViewData["ProviderDisplayName"] = info.ProviderDisplayName;
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationVm { Email = email, AddtionlName = name });
+            }
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationVm model,string? returnUrl)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+            if (ModelState.IsValid)
+            {
+                //get the Info about the user from the external Login Provider
+                var info = await signInManager.GetExternalLoginInfoAsync();
+                if (info == null)
+                {
+                    return View("Error");
+                }
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, AddtionalName = model.AddtionlName };
+                var result = await userManager.CreateAsync(user);
+                if (result.Succeeded)
+                {
+                    result=await userManager.AddLoginAsync(user, info);
+                    if (result.Succeeded)
+                    {
+                        await signInManager.SignInAsync(user, isPersistent: false);
+                        await signInManager.UpdateExternalAuthenticationTokensAsync(info);
+                        return LocalRedirect(returnUrl);
+                    }
+                }
+                AddErrors(result);
+            }
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(model);
         }
     }
 }
