@@ -1,5 +1,6 @@
 ﻿using IdentityTutBhumMVC.Models;
 using IdentityTutBhumMVC.Models.ViewModel;
+using IdentityTutBhumMVC.Models.ViewModel.TwoFactor;
 using IdentityTutBhumMVC.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -276,6 +277,43 @@ namespace IdentityTutBhumMVC.Controllers
             }
             ViewData["ReturnUrl"] = returnUrl;
             return View(model);
+        }
+
+        //All Controller for the two factor Authentication
+        [HttpGet]
+        public async Task<IActionResult> EnableAuthenticator()
+        {
+            var user = await userManager.GetUserAsync(User);
+            await userManager.ResetAuthenticatorKeyAsync(user);
+            var token=await userManager.GetAuthenticatorKeyAsync(user);
+            var model = new TwoFactorAuthenticationVM() { Token = token };
+            return View(model);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EnableAuthenticator(TwoFactorAuthenticationVM model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.GetUserAsync(User);
+                var succeeded = await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider,
+                    model.Code);
+                if (succeeded)
+                {
+                    await userManager.SetTwoFactorEnabledAsync(user, true);
+                }
+                else
+                {
+                    ModelState.AddModelError("Verify", "Your two Factor Authenticated code can't be validated");
+                    return View(model);
+                }
+            }
+            return RedirectToAction(nameof(AuthenticatorConfirmation));
+        }
+        [HttpGet]
+        public ActionResult AuthenticatorConfirmation()
+        {
+            return View();
         }
     }
 }
