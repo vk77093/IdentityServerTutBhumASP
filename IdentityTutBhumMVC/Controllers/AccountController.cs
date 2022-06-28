@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 
 namespace IdentityTutBhumMVC.Controllers
 {
@@ -15,13 +16,15 @@ namespace IdentityTutBhumMVC.Controllers
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly IEmailSender emailSender;
+        private readonly UrlEncoder urlEncoder; //for generating the QR Code
 
         public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender)
+            IEmailSender emailSender,UrlEncoder urlEncoder)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.emailSender = emailSender;
+            this.urlEncoder = urlEncoder;
         }
         public IActionResult Index()
         {
@@ -105,6 +108,12 @@ namespace IdentityTutBhumMVC.Controllers
                    // return RedirectToAction(nameof(HomeController.Index), "Home");
                    //for save from the outer login redirect
                    return LocalRedirect(returnurl);
+                }
+                //For checking the Two Factor Authenticator of Already
+                if (result.RequiresTwoFactor)
+                {
+                    //return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnurl = returnurl,RememberMe=model.RememberMe});
+                    return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnurl,model.RememberMe });
                 }
                 else
                 {
@@ -237,6 +246,11 @@ namespace IdentityTutBhumMVC.Controllers
                 await signInManager.UpdateExternalAuthenticationTokensAsync(info);
                 return LocalRedirect(returnUrl);
             }
+            //For the Managing for the two Factor Auth Previous login
+            if (result.RequiresTwoFactor)
+            {
+                return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnUrl = returnUrl });
+            }
             else
             {
                 //If User Does't Have Account then we will ask user to Create Account
@@ -286,7 +300,12 @@ namespace IdentityTutBhumMVC.Controllers
             var user = await userManager.GetUserAsync(User);
             await userManager.ResetAuthenticatorKeyAsync(user);
             var token=await userManager.GetAuthenticatorKeyAsync(user);
-            var model = new TwoFactorAuthenticationVM() { Token = token };
+
+            //for generating the QRCode
+            string AuthenticatorUriFormat = "otpauth://top{0}:{1}?secret={2}&issuer={0}&digits=6";
+            string AuthenticatorQrCode = string.Format(AuthenticatorUriFormat, urlEncoder.Encode("IdentityManager"),
+                urlEncoder.Encode(user.Email), token);
+            var model = new TwoFactorAuthenticationVM() { Token = token,QrCode=AuthenticatorQrCode};
             return View(model);
         }
         [HttpPost]
@@ -314,6 +333,51 @@ namespace IdentityTutBhumMVC.Controllers
         public ActionResult AuthenticatorConfirmation()
         {
             return View();
+        }
+        [HttpGet]
+        public async Task<IActionResult> VerifyAuthenticatorCode(bool RememberMe,string? returnurl = null)
+        {
+            var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
+            {
+                return View("Error");
+            }
+            ViewData["ReturnUrl"] = returnurl;
+            return View(new VerifyAuthenticatorCodeVM { ReturnUrl = returnurl, RememberMe=RememberMe });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeVM model)
+        {
+            ViewData["ReturnUrl"] = model.ReturnUrl;
+            model.ReturnUrl = model.ReturnUrl?? Url.Content("~/");
+            if (ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var result = await signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, 
+                model.RememberMe, rememberClient: true);
+            if (result.Succeeded)
+            {
+                return LocalRedirect(model.ReturnUrl);
+            }
+            if (result.IsLockedOut)
+            {
+                return View("LockOut");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "InValid code");
+                return View(model);
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> RemoveAuthentication()
+        {
+            var user = await userManager.GetUserAsync(User);
+            await userManager.ResetAuthenticatorKeyAsync(user);
+            await userManager.SetTwoFactorEnabledAsync(user, false);
+            return RedirectToAction(nameof(Index),"Home");
         }
     }
 }

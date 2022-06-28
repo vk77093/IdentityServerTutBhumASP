@@ -8,3 +8,13 @@
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+<div class="mt-2">
+    <p class="text-info text-center">Alternatively Scan the Qr Code</p>
+    <div id="qrcode"></div>
+</div>
+@section Scripts{
+    <script src="~/js/qrcode.js"></script>
+    <script type="text/javascript">
+new QRCode(document.getElementById("qrcode"), "@Model.QrCode");   
+    </script>
+}
