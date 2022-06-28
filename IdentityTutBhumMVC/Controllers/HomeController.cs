@@ -41,5 +41,10 @@ namespace IdentityTutBhumMVC.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        [HttpGet]
+        public ActionResult AccessDenied()
+        {
+            return View();
+        }
     }
 }

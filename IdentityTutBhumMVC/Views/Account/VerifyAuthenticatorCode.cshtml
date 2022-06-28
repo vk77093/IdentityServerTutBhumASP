@@ -1,10 +1,9 @@
 ﻿@model VerifyAuthenticatorCodeVM
 <h1 class="text-center">Verify Authenticator Code</h1>
 <div class="container mt-2">
-    <form asp-controller="Account" asp-action="VerifyAuthenticatorCode" 
-    asp-route-returnUrl="@ViewData["ReturnUrl"]" role="form" method="post">
+    <form asp-controller="Account" asp-action="VerifyAuthenticatorCode" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
 <div asp-validation-summary="All" class="text-danger"></div>
-  <input type="hidden" asp-for="RememberMe" />
+  <input asp-for="RememberMe" type="hidden" />
 <div class="form-group row">
   
     <label class="col-sm-3 col-form-label">Enter Code</label>
@@ -12,14 +11,12 @@
         <input type="text" class="form-control" asp-for="Code"/>
         <span class="text-danger" asp-validation-for="Code"></span>
     </div>
-</div>
+</div>s
 <div class="mt-2 text-center">
     <button type="submit" class="btn btn-primary">Submit</button>
 </div>
 </form>
 </div>
 @section Scripts{
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-    }
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

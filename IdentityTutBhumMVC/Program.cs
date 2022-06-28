@@ -36,6 +36,12 @@ builder.Services.AddAuthentication().AddGoogle(options =>
     //options.ClaimActions.MapJsonKey("urn:google:picture", "picture");
 });
 
+//Application cookies for the Unautorixe page
+builder.Services.ConfigureApplicationCookie(opt =>
+{
+    opt.AccessDeniedPath = new PathString("/Home/AccessDenied");
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 
@@ -17,24 +18,47 @@ namespace IdentityTutBhumMVC.Controllers
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly IEmailSender emailSender;
         private readonly UrlEncoder urlEncoder; //for generating the QR Code
+        private readonly RoleManager<IdentityRole> roleManager; // for managing roles
 
         public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender,UrlEncoder urlEncoder)
+            IEmailSender emailSender,UrlEncoder urlEncoder,RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.emailSender = emailSender;
             this.urlEncoder = urlEncoder;
+            this.roleManager = roleManager;
         }
         public IActionResult Index()
         {
             return View();
         }
         [HttpGet]
-        public IActionResult Register(string? returnurl = null)
+        public async Task<IActionResult> Register(string? returnurl = null)
         {
-            RegisterVM registerVM = new RegisterVM();
+            if(!await roleManager.RoleExistsAsync("Admin"))
+            {
+                //create Roles
+                await roleManager.CreateAsync(new IdentityRole("Admin"));
+                await roleManager.CreateAsync(new IdentityRole("User"));
+            }
+            List<SelectListItem> listItems = new List<SelectListItem>();
+            listItems.Add(new SelectListItem()
+            {
+                Value = "Admin",
+                Text = "Admin",
+            });
+            listItems.Add(new SelectListItem()
+            {
+                Value = "User",
+                Text = "User",
+            });
+            
             ViewData["ReturnUrl"] = returnurl;
+            RegisterVM registerVM = new RegisterVM()
+            {
+                RoleList = listItems,
+            };
             return View(registerVM);
         }
         [HttpPost]
@@ -50,7 +74,15 @@ namespace IdentityTutBhumMVC.Controllers
                 var result=await userManager.CreateAsync(userdata,model.Password);
                 if (result.Succeeded)
                 {
+                    //creating roles
+                    if (model.RoleSelected !=null && model.RoleSelected.Length >0 && model.RoleSelected == "Admin")
+                    {
+                        await userManager.AddToRoleAsync(userdata, "Admin");
 
+                    }else
+                    {
+                        await userManager.AddToRoleAsync(userdata, "User");
+                    }
                    
                     var code = await userManager.GenerateEmailConfirmationTokenAsync(userdata);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new
@@ -70,6 +102,18 @@ namespace IdentityTutBhumMVC.Controllers
                 }
                 AddErrors(result);
             }
+            List<SelectListItem> listItems = new List<SelectListItem>();
+            listItems.Add(new SelectListItem()
+            {
+                Value = "Admin",
+                Text = "Admin",
+            });
+            listItems.Add(new SelectListItem()
+            {
+                Value = "User",
+                Text = "User",
+            });
+            model.RoleList = listItems;
             return View(model);
         }
         private void AddErrors(IdentityResult result)
@@ -113,7 +157,7 @@ namespace IdentityTutBhumMVC.Controllers
                 if (result.RequiresTwoFactor)
                 {
                     //return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnurl = returnurl,RememberMe=model.RememberMe});
-                    return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnurl,model.RememberMe });
+                    return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnurl, model.RememberMe });
                 }
                 else
                 {
@@ -242,6 +286,7 @@ namespace IdentityTutBhumMVC.Controllers
             var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
             if (result.Succeeded)
             {
+               
                 //Update the Any Authentication Token
                 await signInManager.UpdateExternalAuthenticationTokensAsync(info);
                 return LocalRedirect(returnUrl);
@@ -249,7 +294,7 @@ namespace IdentityTutBhumMVC.Controllers
             //For the Managing for the two Factor Auth Previous login
             if (result.RequiresTwoFactor)
             {
-                return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnUrl = returnUrl });
+                return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnurl = returnUrl });
             }
             else
             {
@@ -279,7 +324,9 @@ namespace IdentityTutBhumMVC.Controllers
                 var result = await userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
-                    result=await userManager.AddLoginAsync(user, info);
+                    //creating Role
+                    await userManager.AddToRoleAsync(user, "User");
+                    result =await userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
                         await signInManager.SignInAsync(user, isPersistent: false);
