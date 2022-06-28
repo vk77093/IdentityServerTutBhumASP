@@ -22,11 +22,11 @@ namespace IdentityTutBhumMVC.Controllers
             var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
-                ViewData["TwoFactorAuth"] = false;
+                ViewData["TwoFactorEnabled"] = false;
             }
             else
             {
-                ViewData["TwoFactorAuth"] = true;
+                ViewData["TwoFactorEnabled"] = user.TwoFactorEnabled;
             }
             return View();
         }

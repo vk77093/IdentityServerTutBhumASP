@@ -299,17 +299,18 @@ namespace IdentityTutBhumMVC.Controllers
         {
             var user = await userManager.GetUserAsync(User);
             await userManager.ResetAuthenticatorKeyAsync(user);
-            var token=await userManager.GetAuthenticatorKeyAsync(user);
+            var token = await userManager.GetAuthenticatorKeyAsync(user);
 
             //for generating the QRCode
             string AuthenticatorUriFormat = "otpauth://top{0}:{1}?secret={2}&issuer={0}&digits=6";
             string AuthenticatorQrCode = string.Format(AuthenticatorUriFormat, urlEncoder.Encode("IdentityManager"),
                 urlEncoder.Encode(user.Email), token);
-            var model = new TwoFactorAuthenticationVM() { Token = token,QrCode=AuthenticatorQrCode};
+            var model = new TwoFactorAuthenticationVM() { Token = token, QrCode = AuthenticatorQrCode };
             return View(model);
+           
         }
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableAuthenticator(TwoFactorAuthenticationVM model)
         {
             if (ModelState.IsValid)
@@ -323,7 +324,7 @@ namespace IdentityTutBhumMVC.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("Verify", "Your two Factor Authenticated code can't be validated");
+                    ModelState.AddModelError("Verify", "Your two factor auth code could not be avalidated.");
                     return View(model);
                 }
             }
@@ -335,28 +336,30 @@ namespace IdentityTutBhumMVC.Controllers
             return View();
         }
         [HttpGet]
-        public async Task<IActionResult> VerifyAuthenticatorCode(bool RememberMe,string? returnurl = null)
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyAuthenticatorCode(bool RememberMe,string? returnUrl = null)
         {
             var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
                 return View("Error");
             }
-            ViewData["ReturnUrl"] = returnurl;
-            return View(new VerifyAuthenticatorCodeVM { ReturnUrl = returnurl, RememberMe=RememberMe });
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(new VerifyAuthenticatorCodeVM { ReturnUrl = returnUrl, RememberMe=RememberMe });
         }
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeVM model)
         {
-            ViewData["ReturnUrl"] = model.ReturnUrl;
-            model.ReturnUrl = model.ReturnUrl?? Url.Content("~/");
+            //ViewData["ReturnUrl"] = model.ReturnUrl;
+            model.ReturnUrl = model.ReturnUrl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
                 return View(model);
             }
             var result = await signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, 
-                model.RememberMe, rememberClient: true);
+                model.RememberMe, rememberClient: false);
             if (result.Succeeded)
             {
                 return LocalRedirect(model.ReturnUrl);
