@@ -24,6 +24,16 @@
                                 <tr>
                                     <td>@item.Id</td>
                                     <td>@item.Name</td>
+                                    <td>
+                                        <div class="text-center">
+                                             <form asp-controller="Roles" asp-action="Delete" asp-route-roleid="@item.Id" method="post">
+                                            <a asp-controller="Roles" asp-action="Upsert" asp-route-roleid="@item.Id" class="btn btn-info text-white"
+                                             style="cursor:pointer">Edit</a>
+                                            
+                                                 <button type="submit" class="btn btn-danger text-white" onclick="confirm('Are you sure you want to delete')">Delete</button>
+                                             </form>
+                                        </div>
+                                    </td>
                                 </tr>
                             }
                         </tbody>

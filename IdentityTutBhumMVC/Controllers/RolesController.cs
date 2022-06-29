@@ -72,5 +72,31 @@ namespace IdentityTutBhumMVC.Controllers
             return RedirectToAction(nameof(Index));
 
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(string roleid)
+        {
+            var objtoDel = dBContext.Roles.FirstOrDefault(x => x.Id == roleid);
+            if (objtoDel == null)
+            {
+                TempData[SD.Error] = "Role Not Found";
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                var userInRole = dBContext.UserRoles.Where(x => x.RoleId == roleid).Count();
+                if(userInRole > 0)
+                {
+                    TempData[SD.Error] = "Can;t delete the role as it got assigned to the users";
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    await roleManager.DeleteAsync(objtoDel);
+                    TempData[SD.Success] = "Roles got deleted Successfully";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+        }
     }
 }
