@@ -4,7 +4,11 @@
     <div class="row">
         @{
             var title = "Create Role";
-            
+            if(Model !=null && !string.IsNullOrEmpty(Model.Id))
+            {
+                title = "Update Role";
+                <input asp-for="@Model.Id" type="hidden"/>
+            }
         }
         <div class="card">
             <div class="card-header">
@@ -12,11 +16,7 @@
             </div>
             <div class="card-body">
                 <form asp-controller="Roles" asp-action="Upsert" role="form" method="post">
-                    @if(Model !=null && !string.IsNullOrEmpty(Model.Id))
-            {
-                title = "Update Role";
-                <input asp-for="@Model.Id" type="hidden"/>
-            }
+                    
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label" asp-for="Id">Role Id</label>
                         <div class="col-sm-6 mb-4">

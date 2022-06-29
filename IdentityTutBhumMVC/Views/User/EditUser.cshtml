@@ -1,0 +1,41 @@
+﻿@model ApplicationUser
+<div class="container">
+    <div class="row">
+        <div class="card">
+            <div class="card-header text-center text-info">Edit User and Assign The Role</div>
+        </div>
+        <div class="card-body">
+            <form asp-controller="User" asp-action="EditUser" role="form" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <input type="hidden" asp-for="Id"/>
+                <div class="form-group row">
+                    <label asp-for="AddtionalName" class="col-sm-4 col-form-label">User name</label>
+                    <div class="col-sm-6 mb-2">
+                        <input type="text" asp-for="AddtionalName" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label asp-for="Email" class="col-sm-4 col-form-label">User Email</label>
+                    <div class="col-sm-6 mb-2">
+                        <input type="text" asp-for="Email" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label asp-for="RoleId" class="col-sm-4 col-form-label">Select Role</label>
+                    <div class="col-sm-6 mb-2">
+                       <select class="form-select" asp-for="RoleId" asp-items="@Model.RoleList">
+                           <option disabled selected>---Select The user Role--</option>
+                       </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-4"></div>
+                    <div class="col-sm-6">
+                         <button type="submit" class="btn btn-success">Update</button>
+                     <a asp-action="Index" class="btn btn-warning" style="width:auto">Back to User</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
