@@ -1,0 +1,37 @@
+﻿@model IEnumerable<ApplicationUser>
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="text-center text-info">All User With User List</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Count() > 0)
+            {
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Role Assigned</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Email</td>
+                                <td>@item.AddtionalName</td>
+                                <td>@item.RoleName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <h4 class="text-center text-danger">No User is Added Till Now</h4>
+            }
+        </div>
+    </div>
+</div>

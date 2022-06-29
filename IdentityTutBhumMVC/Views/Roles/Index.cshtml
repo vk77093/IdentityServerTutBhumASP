@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<IdentityRole>
+<div class="container">
+    <div class="row">
+        
+        <div class="col-sm-12 col-md-12">
+            <a class="btn btn-primary btn-lg mb-2 float-end" asp-controller="Roles" asp-action="Upsert">Create Roles</a>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="text-center text-info">Manager All The Roles</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Role Name</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@item.Name</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
