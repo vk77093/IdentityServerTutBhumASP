@@ -1,8 +1,10 @@
 ﻿using IdentityTutBhumMVC.DataBase;
+using IdentityTutBhumMVC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace IdentityTutBhumMVC.Controllers
 {
@@ -16,7 +18,7 @@ namespace IdentityTutBhumMVC.Controllers
             this.dbContext = dbContext;
             this.userManager = userManager;
         }
-        [Authorize]
+        //[Authorize]
         public IActionResult Index()
         {
             //Getting All User With Their Roles
@@ -60,6 +62,80 @@ namespace IdentityTutBhumMVC.Controllers
                 Value = u.Id,
             });
             return View(findUser);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(ApplicationUser user )
+        {
+            if (ModelState.IsValid)
+            {
+                var findUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x => x.Id == user.Id);
+                if (findUser == null)
+                {
+                    return NotFound();
+                }
+                var userrole = dbContext.UserRoles.FirstOrDefault(u => u.UserId == findUser.Id);
+                if (userrole != null)
+                {
+                    var previousRole = dbContext.Roles.Where(x => x.Id == userrole.RoleId).Select(e => e.Name).FirstOrDefault();
+                    //Remove Old role
+                    await userManager.RemoveFromRoleAsync(findUser, previousRole);
+                }
+                var newRole = dbContext.Roles.FirstOrDefault(u => u.Id == user.RoleId).Name;
+                await userManager.AddToRoleAsync(findUser, newRole);
+                findUser.AddtionalName = user.AddtionalName;
+                await dbContext.SaveChangesAsync();
+                TempData[SD.Success] = "User has been edited successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                user.RoleList = dbContext.Roles.Select(r => new SelectListItem
+                {
+                    Text = r.Name,
+                    Value = r.Id,
+                });
+                return View(user);
+            }
+        }
+        //Lock or Unlock User
+        [HttpPost]
+        public IActionResult LockUnlock(string userId)
+        {
+            var findedUser = dbContext.ApplicationUsers.FirstOrDefault(u => u.Id == userId);
+            if (findedUser == null)
+            {
+                return NotFound();
+            }
+            if (findedUser.LockoutEnd != null && findedUser.LockoutEnd > DateTime.Now)
+            {
+                //user is Locked and will remain locked untill next lockout Time
+                //clicking these will unlock Them
+                findedUser.LockoutEnd = DateTime.Now;
+                TempData[SD.Success] = "User Unlocked Successfully";
+            }
+            else
+            {
+                //user is Not Locked and we want to lock them
+                findedUser.LockoutEnd = DateTime.Now.AddYears(100);
+                TempData[SD.Success] = "User Locked Successfully";
+
+            }
+            dbContext.SaveChanges();
+            return RedirectToAction(nameof(Index));
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            var findedUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x => x.Id == userId);
+            if (findedUser == null)
+            {
+                return NotFound();
+            }
+            dbContext.ApplicationUsers.Remove(findedUser);
+            await dbContext.SaveChangesAsync();
+            TempData[SD.Success] = "The User Got Deleted Successfully";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

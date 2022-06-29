@@ -33,6 +33,22 @@
                                         class="btn btn-danger">
                                     DELETE
                                 </button>
+                                            @if(item.LockoutEnd==null || item.LockoutEnd < DateTime.Now)
+                                            {
+                                                //show button of lock
+                                                <button asp-controller="User" asp-action="LockUnlock" asp-route-userId="@item.Id"
+                                                class="btn btn-success text-white" style="cursor:pointer">
+                                            <span>&nbsp;Lock &nbsp;</span>
+                                            </button>
+                                            }
+                                            else{
+                                                 //show button of UnLock
+                                                <button asp-controller="User" asp-action="LockUnlock" asp-route-userId="@item.Id"
+                                                class="btn btn-success text-white" style="cursor:pointer">
+                                            <span>&nbsp;UnLock &nbsp;</span>
+                                                </button>
+                                            }
+
 </form>
                                     </div>
                                 </td>
