@@ -154,16 +154,49 @@ namespace IdentityTutBhumMVC.Controllers
             {
                 UserId = user.Id,
             };
+            var existingCliams = await userManager.GetClaimsAsync(user);
             foreach(Claim claim in ClaimsStores.ClaimsList)
             {
                 UserClaims userClaims = new UserClaims
                 {
                     ClaimType = claim.Type,
                 };
+                if (existingCliams.Any(x => x.Type == claim.Type))
+                {
+                    userClaims.IsSelected = true;
+                }
                 model.Claims.Add(userClaims);
             }
             return View(model);
 
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManagerUserClaims(UserClaimsViewModel model)
+        {
+            IdentityUser user = await userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            //checking old claim and removing
+            var existingClaims = await userManager.GetClaimsAsync(user);
+            var result = await userManager.RemoveClaimsAsync(user, existingClaims);
+            if (!result.Succeeded)
+            {
+                TempData[SD.Error] = "Error while removing the user Claims";
+                return View(model);
+            }
+
+             result = await userManager.AddClaimsAsync(user, model.Claims.Where(
+                c => c.IsSelected).Select(c => new Claim(c.ClaimType, c.IsSelected.ToString())));
+            if (!result.Succeeded)
+            {
+                TempData[SD.Error] = "Error while Adding the user Claims";
+                return View(model);
+            }
+            TempData[SD.Success] = "Claims Got Updated Succesfully";
+            return RedirectToAction(nameof(Index));
         }
     }
 }
