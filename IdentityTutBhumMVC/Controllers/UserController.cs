@@ -1,10 +1,12 @@
 ﻿using IdentityTutBhumMVC.DataBase;
 using IdentityTutBhumMVC.Models;
+using IdentityTutBhumMVC.Models.ViewModel.ClaimsVm;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace IdentityTutBhumMVC.Controllers
 {
@@ -136,6 +138,32 @@ namespace IdentityTutBhumMVC.Controllers
             await dbContext.SaveChangesAsync();
             TempData[SD.Success] = "The User Got Deleted Successfully";
             return RedirectToAction(nameof(Index));
+        }
+
+        // Controllers for User claims
+        [HttpGet]
+        public async Task<IActionResult> ManagerUserClaims(string userId)
+        {
+            //Getting the user Details
+            IdentityUser user =await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var model = new UserClaimsViewModel()
+            {
+                UserId = user.Id,
+            };
+            foreach(Claim claim in ClaimsStores.ClaimsList)
+            {
+                UserClaims userClaims = new UserClaims
+                {
+                    ClaimType = claim.Type,
+                };
+                model.Claims.Add(userClaims);
+            }
+            return View(model);
+
         }
     }
 }
