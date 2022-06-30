@@ -42,6 +42,17 @@ builder.Services.ConfigureApplicationCookie(opt =>
     opt.AccessDeniedPath = new PathString("/Home/AccessDenied");
 });
 
+//Adding the application policy
+builder.Services.AddAuthorization(opt =>
+{
+    opt.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    opt.AddPolicy("AdminAndUser", policy => policy.RequireRole("Admin").RequireRole("User"));
+    opt.AddPolicy("Admin_CreateAccess", policy => policy.RequireRole("Admin").RequireClaim("create", "True")); //require claim can be one
+    opt.AddPolicy("Admin_Create_Edit_DeleteAccess", policy => policy.RequireRole("Admin").RequireClaim("create", "True")
+    .RequireClaim("Edit", "True").RequireClaim("Delete", "True"));
+
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
