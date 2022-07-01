@@ -1,4 +1,5 @@
-﻿using IdentityTutBhumMVC.Models;
+﻿using IdentityTutBhumMVC.DataBase;
+using IdentityTutBhumMVC.Models;
 using IdentityTutBhumMVC.Models.ViewModel;
 using IdentityTutBhumMVC.Models.ViewModel.TwoFactor;
 using IdentityTutBhumMVC.Service;
@@ -19,15 +20,17 @@ namespace IdentityTutBhumMVC.Controllers
         private readonly IEmailSender emailSender;
         private readonly UrlEncoder urlEncoder; //for generating the QR Code
         private readonly RoleManager<IdentityRole> roleManager; // for managing roles
+        private readonly ApplicationDbContext dbContext;
 
         public AccountController(UserManager<IdentityUser> userManager,SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender,UrlEncoder urlEncoder,RoleManager<IdentityRole> roleManager)
+            IEmailSender emailSender,UrlEncoder urlEncoder,RoleManager<IdentityRole> roleManager,ApplicationDbContext dbContext)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.emailSender = emailSender;
             this.urlEncoder = urlEncoder;
             this.roleManager = roleManager;
+            this.dbContext = dbContext;
         }
         public IActionResult Index()
         {
@@ -149,9 +152,24 @@ namespace IdentityTutBhumMVC.Controllers
                     lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                   // return RedirectToAction(nameof(HomeController.Index), "Home");
-                   //for save from the outer login redirect
-                   return LocalRedirect(returnurl);
+                    /* Custome claims Handler*/
+                    var userData = dbContext.ApplicationUsers.FirstOrDefault(u => u.Email.ToLower() == model.Email.ToLower());
+                    var claim = await userManager.GetClaimsAsync(userData);
+                    if (claim.Count > 0)
+                    {
+                        try
+                        {
+                            await userManager.RemoveClaimAsync(userData, claim.FirstOrDefault(u => u.Type == "FirstName"));
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+                    }
+                    await userManager.AddClaimAsync(userData, new Claim("FirstName", userData.AddtionalName));
+                    // return RedirectToAction(nameof(HomeController.Index), "Home");
+                    //for save from the outer login redirect
+                    return LocalRedirect(returnurl);
                 }
                 //For checking the Two Factor Authenticator of Already
                 if (result.RequiresTwoFactor)

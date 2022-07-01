@@ -66,5 +66,15 @@ namespace IdentityTutBhumMVC.Controllers
         {
             return View();
         }
+        [Authorize(Policy = "AdminWithMoreThan1000Days")]
+        public IActionResult AdminWithMoreThan1000Days()
+        {
+            return View();
+        }
+        [Authorize(Policy = "FirstNameAuthPolicy")]
+        public IActionResult FirstNameAuthPage()
+        {
+            return View();
+        }
     }
 }

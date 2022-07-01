@@ -9,6 +9,7 @@ namespace IdentityTutBhumMVC.Models
     {
         [Required]
         public string? AddtionalName { get; set; }
+        public DateTime AccountCreatedAt { get; set; } = DateTime.Now;
         [NotMapped]
         public string? RoleId { get; set; }
         [NotMapped]

@@ -1,8 +1,10 @@
 using IdentityTutBhumMVC.AuthorizedPolices;
 using IdentityTutBhumMVC.AuthorizedPolices.Custom;
+using IdentityTutBhumMVC.AuthorizedPolices.Custom.DaysPol;
 using IdentityTutBhumMVC.DataBase;
 using IdentityTutBhumMVC.Service;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -66,8 +68,14 @@ builder.Services.AddAuthorization(opt =>
     opt.AddPolicy("Admin_Create_Edit_DeleteAccess_OR_SuperAdmin", policy => policy.RequireAssertion(context=> PolicesAuthorize.AuthorizeAdminWithCliamsOrSuperAdmin(context)));
     //custom policy
     opt.AddPolicy("OnlySuperAdminChecker", policy => policy.Requirements.Add(new OnlySuperAdminChecker()));
+    //policy for 1000days
+    opt.AddPolicy("AdminWithMoreThan1000Days", policy => policy.Requirements.Add(new AdminWithMoreThan1000DaysRequirments(1000)));
+    opt.AddPolicy("FirstNameAuthPolicy", policy => policy.Requirements.Add(new FirstNameAuthRequirments("Kumar")));
 });
-
+//Adding service for the Number of days
+builder.Services.AddScoped<INumberOfDaysForAccount, NumberOfDaysForAccount>();
+builder.Services.AddScoped<IAuthorizationHandler, AdminWithMoreThan1000DaysHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, FirstNameAuthHandler>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
