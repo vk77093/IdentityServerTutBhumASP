@@ -1,4 +1,5 @@
 ﻿using IdentityTutBhumMVC.DataBase;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,6 +35,7 @@ namespace IdentityTutBhumMVC.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "OnlySuperAdminChecker")]
         public async Task<IActionResult> Upsert(IdentityRole roles)
         {
             if(await roleManager.RoleExistsAsync(roles.Name))
@@ -74,6 +76,7 @@ namespace IdentityTutBhumMVC.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "OnlySuperAdminChecker")]
         public async Task<IActionResult> Delete(string roleid)
         {
             var objtoDel = dBContext.Roles.FirstOrDefault(x => x.Id == roleid);

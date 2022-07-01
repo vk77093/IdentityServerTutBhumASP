@@ -59,9 +59,10 @@ namespace IdentityTutBhumMVC.Controllers
         {
             return View();
         }
-        //only Admin can Access with claim of Create, edit and delete (not or all three must)
+        //only Admin can Access with claim of Create, edit and delete (not or, all three must)
         // addtional if the user is super admin
-        public IActionResult Admin_Create_Edit_DeleteAccess_SuperAdmin()
+        [Authorize(Policy = "Admin_Create_Edit_DeleteAccess_OR_SuperAdmin")]
+        public IActionResult Admin_Create_Edit_DeleteAccess_OR_SuperAdmin()
         {
             return View();
         }

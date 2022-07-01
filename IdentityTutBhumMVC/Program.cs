@@ -1,3 +1,5 @@
+using IdentityTutBhumMVC.AuthorizedPolices;
+using IdentityTutBhumMVC.AuthorizedPolices.Custom;
 using IdentityTutBhumMVC.DataBase;
 using IdentityTutBhumMVC.Service;
 using Microsoft.AspNetCore.Authentication;
@@ -50,7 +52,20 @@ builder.Services.AddAuthorization(opt =>
     opt.AddPolicy("Admin_CreateAccess", policy => policy.RequireRole("Admin").RequireClaim("create", "True")); //require claim can be one
     opt.AddPolicy("Admin_Create_Edit_DeleteAccess", policy => policy.RequireRole("Admin").RequireClaim("create", "True")
     .RequireClaim("Edit", "True").RequireClaim("Delete", "True"));
+    //Or Type Policy
+    //opt.AddPolicy("Admin_Create_Edit_DeleteAccess_OR_SuperAdmin", policy => policy.RequireAssertion(context =>
+    //(
+    // context.User.IsInRole("Admin") && context.User.HasClaim(c => c.Type == "create" && c.Value == "True")
+    //   && context.User.HasClaim(c => c.Type == "edit" && c.Value == "True")
+    //    && context.User.HasClaim(c => c.Type == "delete" && c.Value == "True")
+    //)
+    //  || context.User.IsInRole("SuperAdmin")
 
+    //));
+    //Adding policy with Function
+    opt.AddPolicy("Admin_Create_Edit_DeleteAccess_OR_SuperAdmin", policy => policy.RequireAssertion(context=> PolicesAuthorize.AuthorizeAdminWithCliamsOrSuperAdmin(context)));
+    //custom policy
+    opt.AddPolicy("OnlySuperAdminChecker", policy => policy.Requirements.Add(new OnlySuperAdminChecker()));
 });
 
 var app = builder.Build();

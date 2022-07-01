@@ -67,6 +67,7 @@ namespace IdentityTutBhumMVC.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "OnlySuperAdminChecker")]
         public async Task<IActionResult> EditUser(ApplicationUser user )
         {
             if (ModelState.IsValid)
@@ -127,6 +128,7 @@ namespace IdentityTutBhumMVC.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpPost]
+        [Authorize(Policy = "OnlySuperAdminChecker")]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             var findedUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x => x.Id == userId);
