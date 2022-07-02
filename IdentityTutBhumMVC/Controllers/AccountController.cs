@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-
+//#nullable disable
 namespace IdentityTutBhumMVC.Controllers
 {
     public class AccountController : Controller
@@ -146,27 +146,37 @@ namespace IdentityTutBhumMVC.Controllers
             ViewData["ReturnUrl"] = returnurl;
             //for giving the direct access of the page in header search
            returnurl= returnurl ?? Url.Content("~/");
+            var userDataId = model.Email;
             if (ModelState.IsValid)
             {
-                var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe,
+                if (model.Email !=null)
+                {
+                    var user = await userManager.FindByEmailAsync(model.Email);
+                    if (user != null)
+                    {
+                        userDataId = user.UserName;
+                    }
+                }
+
+                var result = await signInManager.PasswordSignInAsync(userDataId, model.Password, model.RememberMe,
                     lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     /* Custome claims Handler*/
-                    var userData = dbContext.ApplicationUsers.FirstOrDefault(u => u.Email.ToLower() == model.Email.ToLower());
-                    var claim = await userManager.GetClaimsAsync(userData);
-                    if (claim.Count > 0)
-                    {
-                        try
-                        {
-                            await userManager.RemoveClaimAsync(userData, claim.FirstOrDefault(u => u.Type == "FirstName"));
-                        }
-                        catch (Exception)
-                        {
+                    //var userData = dbContext.ApplicationUsers.FirstOrDefault(u => u.Email.ToLower() == model.Email.ToLower());
+                    //var claim = await userManager.GetClaimsAsync(userData);
+                    //if (claim.Count > 0)
+                    //{
+                    //    try
+                    //    {
+                    //        await userManager.RemoveClaimAsync(userData, claim.FirstOrDefault(u => u.Type == "FirstName"));
+                    //    }
+                    //    catch (Exception)
+                    //    {
 
-                        }
-                    }
-                    await userManager.AddClaimAsync(userData, new Claim("FirstName", userData.AddtionalName));
+                    //    }
+                    //}
+                    //await userManager.AddClaimAsync(userData, new Claim("FirstName", userData.AddtionalName));
                     // return RedirectToAction(nameof(HomeController.Index), "Home");
                     //for save from the outer login redirect
                     return LocalRedirect(returnurl);
