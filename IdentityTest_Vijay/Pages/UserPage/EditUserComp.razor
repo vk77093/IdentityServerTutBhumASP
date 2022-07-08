@@ -1,0 +1,47 @@
+﻿@page "/edituser/{userid}"
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8 mr-2 mml-2">
+            <Card CardTitle="Manager The User">
+                <CardBody>
+                   
+                 @*   <p>@user.AddtionalUserName</p>*@
+                    <EditForm Model="user" OnValidSubmit="HandleForm">
+                        <input type="hidden" @bind-value="@userid"/>
+                        <FormLayDigonal labelFor="userName" LabelHeading="UserName">
+                            <InputFiledArea>
+                                <InputText class="form-control" id="userName" @bind-Value="user.AddtionalUserName"/>
+                            </InputFiledArea>
+                        </FormLayDigonal>
+                         <FormLayDigonal labelFor="emailid" LabelHeading="User Email">
+                       <InputFiledArea>
+                              <input type="email" id="emailid" class="form-control" @bind-value="user.Email"/>
+                       </InputFiledArea>
+                   </FormLayDigonal>
+                   <FormLayDigonal labelFor="roleid" LabelHeading="Select Role">
+                       <InputFiledArea>
+                           <InputSelect class="form-control" @bind-Value="user.RoleId">
+                               <option selected value disabled>--select The User Role--</option>
+                               @foreach (var item in roles)
+                               {
+                                   <option value="@item.Id">@item.Name</option>
+                               }
+                           </InputSelect>
+                       </InputFiledArea>
+                   </FormLayDigonal>
+                   <div class="form-group row">
+                    <div class="col-sm-4"></div>
+                    <div class="col-sm-6">
+                         <button type="submit" class="btn btn-success">Update</button>
+                     <a href="/usermanager" class="btn btn-warning" style="width:auto">Back to User</a>
+                    </div>
+                </div>
+                    </EditForm>
+                </CardBody>
+            </Card>
+        </div>
+    </div>
+</div>
+
+

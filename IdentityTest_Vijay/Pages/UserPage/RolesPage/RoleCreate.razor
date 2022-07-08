@@ -1,0 +1,57 @@
+﻿@page "/role"
+<div class="row">
+    <Card CardTitle="Create  Roles">
+        <CardBody>
+            <EditForm Model="role" OnValidSubmit="HandleForm">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+            <AlertBox AlertMessage="@Message"/>
+         
+            <FormLayDigonal labelFor="rolename" LabelHeading="Role Name">
+                <InputFiledArea>
+                    <InputText class="form-control" id="rolename" @bind-Value="role.Name"/>
+                </InputFiledArea>
+            </FormLayDigonal>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-6 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Add Role</button>
+                </div>
+            </div>
+        </EditForm>
+        </CardBody>
+    </Card>
+</div>
+<div class="row">
+    <div class="Col-sm-10 col-md-10 mr-2 ml-2">
+        <Card CardTitle="Manage The Roles">
+            <CardBody>
+<TableComp>
+    <TableHeader>
+        <th>Sr.No.</th>
+        <th>Role Name</th>
+         <th>Manage Roles</th>
+
+    </TableHeader>
+    <TableBody>
+        @foreach (var item in roles)
+        {
+            <tr>
+                <td>@(roles.ToList().IndexOf(item)+1)</td>
+                <td>@item.Name</td>
+                <td>
+                    <div class="text-center">
+                        <a href="/editrole/@item.Id" class="btn btn-primary text-white">Edit Role</a>
+                                        <button type="button" @onclick="(()=>DeleteRoleData(item.Id))" class="btn btn-danger text-white">Delete Role</button>
+                                        <a href="/roleclaimsingle/@item.Id"class="btn btn-warning text-white">Manager Role Claims</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </TableBody>
+</TableComp>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+

@@ -1,0 +1,46 @@
+﻿@page "/manageRolesClaims/{roleid}"
+
+<div class="container">
+    <div class="col-sm-8 col-md-8">
+        <Card CardTitle="Add Or Remove The Role Claims">
+            <CardBody>
+                
+                <EditForm Model="roleClaimsView" OnValidSubmit="HandleForm">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                    @foreach (var item in roleClaimsView.Claims)
+                    {
+                        <div class="form-check mt-2">
+                            <input type="hidden" @bind-value="@roleid"/>
+                           <input type="hidden" @bind-value="@item.ClaimType"/>
+                           <input type="checkbox" id="@item.ClaimType" @bind="item.IsSelected"  class="form-check-input"/>
+                           <label class="form-check-label" for="@item.ClaimType">
+                               @item.ClaimType
+                           </label>
+                        </div>
+                    }
+                     <button type="submit" class="btn btn-primary mr-2">Update Calims</button>
+                <a href="/role" class="btn btn-secondary mr-2">Go Back</a>
+                    </EditForm>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public string  roleid { get; set; }
+    RoleClaimsViewModel roleClaimsView = new RoleClaimsViewModel();
+    IdentityRoleClaim<string> roleClaim = new IdentityRoleClaim<string>();
+    [Inject]
+    IRoleRepo roleRepo { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        roleClaimsView = await roleRepo.GetAllRolesClaims(roleid);
+    }
+    async void HandleForm()
+    {
+        // roleClaim.RoleId=roleid;
+        //await roleRepo.ManageRoleClaims(roleClaim);
+        await roleRepo.ManageRoleClaimsBySecond(roleClaimsView);
+    }
+}

@@ -1,0 +1,17 @@
+﻿@if (!String.IsNullOrEmpty(AlertMessage))
+                    {
+    <p class="alert alert-success"role="alert">@AlertMessage</p>
+}
+
+
+@code {
+    [Parameter]
+    public string AlertMessage { get; set; } = string.Empty;
+
+  //public  async Task DisapperMessage()
+  //  {
+  //      await Task.Delay(5000);
+  //      AlertMessage = string.Empty;
+  //     StateHasChanged();
+  //  }
+}

@@ -1,0 +1,15 @@
+﻿<div class="form-group row">
+    <label for="@labelFor" class="col-form-label col-sm-3">@LabelHeading</label>
+    <div class="col-sm-6 mb-2">
+        @InputFiledArea
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? labelFor { get; set; }
+    [Parameter]
+    public string? LabelHeading { get; set; }
+    [Parameter]
+    public RenderFragment? InputFiledArea { get; set; }
+}

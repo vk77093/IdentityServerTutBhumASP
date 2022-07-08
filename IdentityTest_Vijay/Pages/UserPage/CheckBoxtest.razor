@@ -1,0 +1,63 @@
+﻿@page "/checkboxtest/{userid}"
+@using System.Security.Claims
+
+<Card CardTitle="@userid">
+    <CardBody>
+        @foreach (var item in userClaimsView.Claims)
+        {
+            <p>@item.ClaimType</p>
+            <p>@item.IsSelected</p>
+        }
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter]
+    public string userid { get; set; }
+    [Inject]
+    UserManager<IdentityUser> userManager { get; set; }
+    List<UserClaimsViewModel> claimsListData = new List<UserClaimsViewModel>();
+    UserClaimsViewModel userClaimsView = new UserClaimsViewModel();
+    UserClaims UserClaims=new UserClaims();
+    [Inject]
+    IUsersRepo usersRepo { get; set; }
+    protected override async void OnInitialized()
+    {
+        userClaimsView = await usersRepo.GetAllUsersClaims(userid);
+    }
+    public async Task<List<UserClaimsViewModel>> HandleUserClaims(string id)
+    {
+        userid = id;
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            return null;
+        }
+        else
+        {
+            foreach (var item in claimsListData)
+            {
+                foreach (var claimsData in item.Claims)
+                {
+                    userClaimsView = new UserClaimsViewModel
+                        {
+                            UserId = item.UserId,
+                            Claims = item.Claims
+                        };
+                }
+                var existingClaims = await userManager.GetClaimsAsync(user);
+                foreach (Claim claim in ClaimsStores.ClaimsList)
+                {
+                    UserClaims userClaims = new UserClaims { ClaimType = claim.Type, };
+                    if (existingClaims.Any(x => x.Type == claim.Type))
+                    {
+                        userClaims.IsSelected = true;
+                    }
+                    userClaimsView.Claims.Add(userClaims);
+                }
+            }
+            return claimsListData;
+
+        }
+    }
+}

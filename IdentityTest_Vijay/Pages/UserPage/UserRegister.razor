@@ -1,0 +1,51 @@
+﻿@page "/register"
+
+<div class="row">
+    <div class="col-sm-2">
+
+    </div>
+    <div class="col-sm-8">
+        <Card CardTitle="Register User Here">
+            <CardBody>
+                <EditForm Model="user" OnValidSubmit="HandleForm">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                     @if (!String.IsNullOrEmpty(Message))
+                    {
+                        <p class="alert alert-success"role="alert">@Message</p>
+                    }
+                   <FormLayDigonal labelFor="emailid" LabelHeading="User Email">
+                       <InputFiledArea>
+                              <input type="email" id="emailid" class="form-control" @bind-value="user.Email"/>
+                       </InputFiledArea>
+                   </FormLayDigonal>
+                    <FormLayDigonal labelFor="userName" LabelHeading="User Name">
+                        <InputFiledArea>
+                            <InputText class="form-control" id="userName" @bind-Value="user.AddtionlUserName"/>
+                        </InputFiledArea>
+                    </FormLayDigonal>
+                    <FormLayDigonal labelFor="Password" LabelHeading="Password">
+                        <InputFiledArea>
+                            <InputText type="password" class="form-control" @bind-Value="user.Password"></InputText>
+                        </InputFiledArea>
+                    </FormLayDigonal>
+                    <FormLayDigonal labelFor="Confirm" LabelHeading="Confirm Password">
+                        <InputFiledArea>
+                            <InputText type="password" class="form-control" @bind-Value="user.ConfirmPassword"></InputText>
+                        </InputFiledArea>
+                    </FormLayDigonal>
+                    <div class="row mt-2">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-6 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                        </div>
+                    </div>
+                </EditForm>
+            </CardBody>
+        </Card>
+    </div>
+    <div class="col-sm-2">
+
+    </div>
+</div>
+

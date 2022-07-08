@@ -1,0 +1,45 @@
+﻿@page "/manageClaims/{userid}"
+<div class="container">
+    <div class="col-sm-8 col-md-8">
+        <Card CardTitle="Add Or Remove The User Claims">
+            <CardBody>
+                <EditForm Model="userClaimsView" OnValidSubmit="HandleForm">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                  @*  <input type="hidden" @bind-value="@userid"/>*@
+                @*@for(int i = 0; i < userClaimsView.Claims.Count(); i++)
+                    {
+                        <div class="form-check mt-2">
+                             <input type="hidden" @bind-value="@userid"/>
+                            <input type="hidden" @bind-value="userClaimsView.Claims[i].ClaimType"/>
+                            @*<input type="checkbox" @bind="userClaimsView.Claims[i].IsSelected" id="check" class="form-check-input"/>*@
+                            @*<input type="checkbox" @bind="userClaimsView.Claims[i].IsSelected" id="@userClaimsView.Claims[i].IsSelected" class="form-check-input"/>
+                            <label class="form-check-label" for="@userClaimsView.Claims[i].IsSelected">
+                                @userClaimsView.Claims[i].ClaimType
+                            </label>
+                        </div>
+                        
+                       
+                    }*@
+                    
+                   @foreach (var item in userClaimsView.Claims)
+                   {
+                       <div class="form-check mt-2">
+                           <input type="hidden" @bind-value="@userid"/>
+                           <input type="hidden" @bind-value="@item.ClaimType"/>
+                           <input type="checkbox" id="@item.ClaimType" @bind="item.IsSelected"  class="form-check-input"/>
+                           <label class="form-check-label" for="@item.ClaimType">
+                               @item.ClaimType
+                           </label>
+                       </div>
+                   }
+                   
+           
+                    <button type="submit" class="btn btn-primary mr-2">Update Calims</button>
+                <a href="/userManager" class="btn btn-secondary mr-2">Go Back</a>
+                </EditForm>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+

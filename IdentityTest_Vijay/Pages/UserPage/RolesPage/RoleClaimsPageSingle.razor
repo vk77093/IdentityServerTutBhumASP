@@ -1,0 +1,96 @@
+﻿@page "/roleclaimsingle/{roleid}"
+
+<div class="container">
+    <Card CardTitle="Add Claims To The Role">
+        <CardBody>
+            <EditForm Model="role" OnValidSubmit="HandleForm">
+                <DataAnnotationsValidator/>
+                <ValidationSummary/>
+                <FormLayDigonal LabelHeading="Calim Type" labelFor="claimType">
+                    <InputFiledArea>
+                        <InputSelect class="form-select" @bind-Value="role.ClaimType" id="claimType">
+                            @foreach (var item in rolesClaims)
+                            {
+                               <option value="@item.ClaimType">@item.ClaimType</option>
+                            }
+                        </InputSelect>
+                    </InputFiledArea>
+                </FormLayDigonal>
+               @* <FormLayDigonal LabelHeading="Calim Value" labelFor="claimValue">
+                    <InputFiledArea>
+                        <InputSelect class="form-select" @bind-Value="role.ClaimValue">
+                            @foreach (var item in rolesClaims)
+                            {
+                               <option value="@item.ClaimValue" id="claimValue">@item.ClaimValue</option>
+                            }
+                        </InputSelect>
+                    </InputFiledArea>
+                </FormLayDigonal>*@
+                <div class="row">
+                    <div class="col-sm-4"></div>
+                    <div class="col-sm-6">
+                        <button type="submit" class="btn btn-success">Update</button>
+                     <a href="/role" class="btn btn-warning" style="width:auto">Back to User</a>
+                    </div>
+                </div>
+            </EditForm>
+        </CardBody>
+    </Card>
+    <div class="col-sm-8">
+        <Card CardTitle="Roles Assigned to That Role is">
+            <CardBody>
+                <TableComp>
+                    <TableHeader>
+                        <th>Sr.No.</th>
+                        <th>Claim Type</th>
+                        <th>Claim Value</th>
+                    </TableHeader>
+                    <TableBody>
+                        @if (rolesClaimsList.Count() > 0)
+                        {
+                            @foreach (var item in rolesClaimsList)
+                            {
+                                <td>@(rolesClaimsList.ToList().IndexOf(item)+1)</td>
+                                <td>@item.ClaimType</td>
+                                <td>@item.ClaimValue</td>
+                            }
+                        }
+                        else{
+                            <tr>
+                                <td colspan="3">
+                                    <p class="text-center text-info">No Claims is Assigned to Thats Role</p>
+                                </td>
+                            </tr>
+                        }
+                    </TableBody>
+                </TableComp>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? roleid { get; set; }
+    [Inject]
+    INewRoleClaimsRepo claimsRepo { get; set; }
+    IEnumerable<RoleClaimsTable> rolesClaims = new List<RoleClaimsTable>();
+    IdentityRoleClaim<string> role = new IdentityRoleClaim<string>();
+    IEnumerable<IdentityRoleClaim<string>> rolesClaimsList = new List<IdentityRoleClaim<string>>();
+    async void HandleForm()
+    {
+        role.RoleId = roleid;
+        role.ClaimType = role.ClaimType;
+        //role.ClaimValue = role.ClaimValue;
+        role.ClaimValue = "True";
+
+        await claimsRepo.AddClaimsInRoles(role);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        claimsRepo.SeedRoleClaimTable();
+        rolesClaims = await claimsRepo.GetRoleClaimsTables();
+        rolesClaimsList = await claimsRepo.GetRoleClaimByroleId(roleid);
+
+    }
+}

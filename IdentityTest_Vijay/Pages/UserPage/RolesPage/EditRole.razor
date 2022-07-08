@@ -1,0 +1,42 @@
+﻿@page "/editrole/{roleid}"
+<Card CardTitle="Edit  Roles">
+        <CardBody>
+            <EditForm Model="role" OnValidSubmit="HandleForm">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+           @* <AlertBox AlertMessage="@Message"/>*@
+         
+            <FormLayDigonal labelFor="rolename" LabelHeading="Role Name">
+                <InputFiledArea>
+                    <InputText class="form-control" id="rolename" @bind-Value="role.Name"/>
+                </InputFiledArea>
+            </FormLayDigonal>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-6 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Update Role</button>
+                </div>
+            </div>
+        </EditForm>
+        </CardBody>
+    </Card>
+
+@code {
+    IdentityRole role = new IdentityRole();
+    [Parameter]
+    public string? roleid { get; set; }
+    [Inject]
+    IRoleRepo? roleRepo { get; set; }
+    [Inject]
+    NavigationManager? Nvm { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        role = await roleRepo.GetRoleById(roleid);
+    }
+    async void HandleForm()
+    {
+        await roleRepo.UpdateRole(role);
+        Nvm.NavigateTo("/role");
+
+    }
+}

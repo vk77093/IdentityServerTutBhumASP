@@ -1,0 +1,51 @@
+﻿@page "/userManager"
+<div class="container">
+    <div class="row">
+        <div class="col-sm-10 mr-2 ml-2">
+            <Card CardTitle="Manage All The Users">
+                <CardBody>
+                   
+                    <TableComp>
+                        <TableHeader>
+                            <th>Sr.No.</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Manage Users</th>
+                        </TableHeader>
+                        <TableBody>
+                            @{ 
+                               int sno = 0;
+                             }
+                            @foreach (var user in userList)
+                            {
+                                <tr>
+                                    <td>
+                                 @* @{ sno++; }
+                                     @sno *@
+                                     @(userList.ToList().IndexOf(user) + 1)
+                                  </td>
+                             <td>@user.AddtionalUserName</td>
+                              <td>@user.Email</td>
+                               <td>@user.RoleName</td>
+                               <td>
+                                   <div class="text-center">
+                                      
+                                           <a href="/edituser/@user.Id" class="btn btn-primary text-white">Edit User</a>
+                                        <button type="button" @onclick="(()=>DeleteUserData(user.Id))" class="btn btn-danger text-white">Delete User</button>
+                                        <a href="/manageClaims/@user.Id"class="btn btn-warning text-white">Manager Claims</a>
+                                       
+                                   </div>
+                               </td>
+                                </tr>
+                            }
+                        </TableBody>
+                    </TableComp>
+                </CardBody>
+            </Card>
+        </div>
+       
+    </div>
+</div>
+
+
